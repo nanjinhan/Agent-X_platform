@@ -1,0 +1,31 @@
+[project]
+name = "signals-batch"
+version = "0.1.0"
+description = "SIGNALS 성과 계산·랭킹·시장데이터 수집 배치 (SYS-006)"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=2.0",
+    "psycopg[binary]>=3.2",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: signals-postgres
+    environment:
+      POSTGRES_DB: signals
+      POSTGRES_USER: signals
+      POSTGRES_PASSWORD: signals_local_dev
+    ports:
+      - "5433:5432" # 5432는 다른 프로젝트(we-meet) DB가 점유 중
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./packages/database/migrations:/migrations:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signals -d signals"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: signals-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

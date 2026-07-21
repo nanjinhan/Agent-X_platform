@@ -1,0 +1,8 @@
+{
+  "name": "@signals/database",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "migrate": "node scripts/migrate.mjs"
+  }
+}
