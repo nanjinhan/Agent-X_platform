@@ -5,7 +5,7 @@
 > **규칙: 깃허브에 푸시할 때마다 이 문서를 먼저 갱신한다.**
 
 **마지막 갱신**: 2026-07-21
-**현재 위치**: T1 완료 → **다음 작업: T2 (국내 시장데이터 수집)**
+**현재 위치**: T1·T2·T3 완료 → **다음 작업: T4 (identity 모듈 — 가입·로그인·본인인증)**
 
 ---
 
@@ -35,17 +35,38 @@
 - **SRS 정오 발견**: 16.1의 `notification_deliveries`·`audit_logs`는 단독 PK로는 파티션 생성 불가 → 복합 PK로 정정 (마이그레이션 파일에 주석 있음)
 - 스모크 테스트: 시그널 불변 트리거(`Signal content is immutable`) 작동 확인
 
-## 3. 다음 작업: T2 — 국내 시장데이터 수집
+### T2 — 국내 시장데이터 수집 (2026-07-21 완료)
+- **소스 전환 결정**: KRX data.krx.co.kr 직접 호출이 이 네트워크에서 400 "LOGOUT" 차단
+  → **네이버 금융 시세 API(`naver_client.py`) + KIND 상장법인목록(`kind_client.py`)** 조합으로 구현.
+  `krx_client.py`는 차단 기록과 함께 보존 (정식 데이터 계약 시 재구현 지점).
+- 실행: `cd batch && .venv/Scripts/python -m signals_batch.ingestion.kr.backfill --days 45`
+- 결과: 2,635종목 × 개장일 30일 = **75,125행 적재**, 미거래일(OHLC 없음+거래량 0) 2,769행 거부, 플래그 0
+- 품질검증(SYS-009) 6종 구현: `ingestion/quality/validators.py` + 단위테스트 14건 (`pytest` 통과)
+- 거래 캘린더: market='KR' 공통, "데이터 존재 = 개장일" 방식 (정식 휴장일 소스는 후속)
+- **후속 보강 필요** (T9 슬리피지·REG-013 전까지): 시가총액, 거래대금(value), ETF 마스터, 수정주가 계수
 
-**위치**: `batch/src/signals_batch/ingestion/kr/` (현재 빈 스텁)
+### T3 — 미국·환율·벤치마크 수집 (2026-07-21 완료)
+- **무료 구현**: Polygon(키 필요) 대신 **야후 파이낸스 차트 API**(`yahoo_client.py`, 키 불필요).
+  개별주·지수·환율이 같은 엔드포인트. 실행: `python -m signals_batch.ingestion.us.backfill --days 45`
+- 적재: 미국 34종목(NASDAQ 16 + NYSE 18) 986행, USDKRW 31행, 벤치마크 SPX_TR/KOSPI200_TR 각 29, US 캘린더 29개장일
+- **주의할 한계**:
+  - `KOSPI200_TR`은 실제로 **가격지수(`^KS200`) 근사** — 무료 TR 소스 부재. 배당수익률(~2%/년)만큼 벤치마크가 과소 → 알파(PERF-015)가 그만큼 과대 계상됨. **정식 데이터 계약 시 실제 TR로 교체 필수.**
+  - 미국 유니버스는 전체가 아니라 유동성 상위 34종목 시드(`us_universe.py`). 자체 에이전트 시연엔 충분하나 확장 필요.
+  - 거래대금·시가총액·수정주가 계수 여전히 없음(T2와 동일 후속 항목).
 
-**할 일** (SYS-007, SYS-009, SYS-011):
-1. KRX 일봉(OHLCV)·종목마스터 수집기 — 공개 소스(KRX 정보데이터시스템 OTP 방식 또는 네이버금융)로 시작 가능, API 키 불필요
-2. 거래 캘린더 적재 (`trading_calendar`)
-3. 품질검증 6종: 결측 / 이상치(±50%) / OHLC 정합성 / 거래량 음수 / 중복 / 지연 → 실패 시 `ingestion/quality`에서 거부·플래그
-4. **완료 기준**: 실데이터 30일치가 `daily_prices`·`instruments`에 적재되고 검증 통과
+## 3. 다음 작업: T4 — identity 모듈
 
-**T2 이후**: T3(미국·환율·벤치마크) → T4(identity) → … 전체 순서는 [docs/TASKS.md](./docs/TASKS.md).
+**위치**: `apps/core-api/src/modules/identity/` (빈 모듈 스켈레톤)
+
+**할 일** (SYS-025, REG-010, REG-020, SEC-001~004):
+1. 가입·로그인·소셜(kakao/naver/google/apple)·로그아웃·탈퇴 — API 8종은 SRS 17.2 참조
+2. JWT: Access 30분(메모리) + Refresh 30일(HttpOnly), Refresh 회전 + 재사용 감지(SYS-025)
+3. 본인인증(휴대폰) 연동 + 만 19세 미만 차단(REG-020) — 실 PASS 연동은 목킹 가능, 인터페이스만 확정
+4. 비밀번호 Argon2id, deny-by-default 인가(SEC-005)
+5. `packages/domain`의 `UserRole` 사용, 소유 테이블은 `users`·`user_risk_profiles`
+6. **완료 기준**: 인증 API 8종 동작, 만 19세 차단 확인
+
+**T4 이후**: T5(provider·agent) → T6(해시체인, 비가역) → … [docs/TASKS.md](./docs/TASKS.md).
 크리티컬 패스는 **T2→T9→T12** (시장데이터 → 기준가 → 골든 테스트 오차 0.01%p).
 
 ## 4. 개발 환경 셋업 (새로 받은 사람용)
