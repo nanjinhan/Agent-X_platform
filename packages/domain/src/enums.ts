@@ -108,6 +108,18 @@ export enum SignalFrequency {
   VERY_HIGH = 'VERY_HIGH',
 }
 
+/**
+ * AGT-005 평균 보유기간 — SRS는 "5구간"만 명시하고 값을 정의하지 않아
+ * 다음 5구간으로 확정한다 (USR-005 필터 5구간과 일치). 변경 시 마이그레이션 필요.
+ */
+export enum HoldingPeriod {
+  VERY_SHORT = 'VERY_SHORT', // ~3거래일
+  SHORT = 'SHORT', // 3~10거래일
+  MEDIUM = 'MEDIUM', // 10~30거래일
+  LONG = 'LONG', // 30~90거래일
+  VERY_LONG = 'VERY_LONG', // 90거래일+
+}
+
 /** SUB-003 — 가격은 티어 고정제. 자유 입력 금지 */
 export enum PriceTier {
   T0 = 'T0',

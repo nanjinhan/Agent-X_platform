@@ -33,24 +33,32 @@ export class AuthService {
 
     const ciHash = sha256hex(identity.ci);
     if (await this.users.existsByCiHash(ciHash)) {
-      throw new ApiError(ApiErrorCode.TRIAL_ALREADY_USED, '이미 가입된 사용자입니다');
+      throw new ApiError(ApiErrorCode.ALREADY_REGISTERED, '이미 가입된 사용자입니다');
     }
     if (await this.users.findByEmail(input.email)) {
-      throw new ApiError(ApiErrorCode.TRIAL_ALREADY_USED, '이미 사용 중인 이메일입니다');
+      throw new ApiError(ApiErrorCode.ALREADY_REGISTERED, '이미 사용 중인 이메일입니다');
     }
 
     const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
-    const user = await this.users.create({
-      email: input.email,
-      passwordHash,
-      phoneHash: sha256hex(identity.phone),
-      ciHash,
-      name: identity.name,
-      birthDate: identity.birthDate,
-      role: UserRole.SUBSCRIBER,
-      marketingConsent: input.marketingConsent,
-    });
-    return this.tokens.issue(user.id, user.role);
+    try {
+      const user = await this.users.create({
+        email: input.email,
+        passwordHash,
+        phoneHash: sha256hex(identity.phone),
+        ciHash,
+        name: identity.name,
+        birthDate: identity.birthDate,
+        role: UserRole.SUBSCRIBER,
+        marketingConsent: input.marketingConsent,
+      });
+      return await this.tokens.issue(user.id, user.role);
+    } catch (e) {
+      // 사전 확인~INSERT 사이 경쟁 조건: UNIQUE(email, ci_hash) 위반은 409로 변환
+      if ((e as { code?: string }).code === '23505') {
+        throw new ApiError(ApiErrorCode.ALREADY_REGISTERED, '이미 가입된 사용자입니다');
+      }
+      throw e;
+    }
   }
 
   async login(email: string, password: string): Promise<TokenPair> {
@@ -72,6 +80,11 @@ export class AuthService {
    * 신규 소셜 사용자도 본인인증(만 19세)이 필요하므로, 미가입이면 가입 유도로 응답한다.
    */
   async socialLogin(provider: string, email: string): Promise<TokenPair> {
+    // 목 구현은 이메일만으로 로그인되므로 프로덕션 반입 시 계정 탈취 구멍이 된다.
+    // 실 OAuth 어댑터로 교체 전까지 프로덕션에서 비활성화.
+    if (process.env.NODE_ENV === 'production') {
+      throw new ApiError(ApiErrorCode.UNAUTHENTICATED, '소셜 로그인은 아직 지원되지 않습니다');
+    }
     const allowed = ['kakao', 'naver', 'google', 'apple'];
     if (!allowed.includes(provider)) {
       throw new ApiError(ApiErrorCode.UNAUTHENTICATED, '지원하지 않는 소셜 제공자입니다');

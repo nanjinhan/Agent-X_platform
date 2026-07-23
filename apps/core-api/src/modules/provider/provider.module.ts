@@ -1,9 +1,18 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { IdentityModule } from '../identity/identity.module';
+import { ProviderController } from './api/provider.controller';
+import { ProviderService } from './application/provider.service';
+import { ProviderRepository } from './infra/provider.repository';
 
 /**
- * 공급자·심사·정산정보 — 의존: identity
- * 내부 구조: api(컨트롤러) / application(공개 서비스) / domain / infra(자기 테이블만) / events
- * 타 모듈은 application의 exports로만 접근한다 (SYS-003).
+ * 공급자·심사·정산정보 (SYS-002: 의존 identity).
+ * 공개 인터페이스: ProviderService (agent 모듈이 사용).
  */
-@Module({})
+@Module({
+  imports: [IdentityModule, JwtModule.register({})],
+  controllers: [ProviderController],
+  providers: [ProviderService, ProviderRepository],
+  exports: [ProviderService],
+})
 export class ProviderModule {}

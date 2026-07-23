@@ -18,6 +18,7 @@
 
 ### 배경 문서
 
+- 비전(왜·어디까지): [VISION.md](./VISION.md) — 사회적 미션, 확장 층위(교육·ESG·광주), 경계
 - 요구사항 원문(SRS): [SIGNALS 요구사항지시서 v1_0.md](./SIGNALS%20요구사항지시서%20v1_0.md) — 코드 주석의 `REG-xxx`, `SYS-xxx` 등 요구사항 ID의 출처
 - 구조 설계: [PROJECT-STRUCTURE.md](./PROJECT-STRUCTURE.md) — 모듈 경계, 테이블 소유권, 규제 강제 포인트
 - 아키텍처 결정 기록: [docs/adr/](./docs/adr/)

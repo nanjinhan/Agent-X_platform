@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UserRole } from '@signals/domain';
 import { UserRepository } from '../infra/user.repository';
 import type { UserRow } from '../domain/user.types';
 
@@ -13,5 +14,10 @@ export class IdentityService {
 
   getUserById(id: string): Promise<UserRow | null> {
     return this.users.findById(id);
+  }
+
+  /** 공급자 승인 시 역할 승격 (provider 모듈이 호출). */
+  promoteToProvider(userId: string): Promise<void> {
+    return this.users.updateRole(userId, UserRole.PROVIDER);
   }
 }

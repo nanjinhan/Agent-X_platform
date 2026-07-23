@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/* 다크 변형: .dark 클래스 기반 (cult-ui 표준) */
+@custom-variant dark (&:is(.dark *));
+
+/* ──────────────────────────────────────────────────────────
+   SIGNALS 디자인 토큰
+   - shadcn 계열 시맨틱 토큰(background/foreground/card/…) 위에
+   - 브랜드 레이어: 황동 액센트 + 한국 시장 관례(상승=빨강, 하락=파랑)
+   ────────────────────────────────────────────────────────── */
+:root {
+  --background: oklch(0.985 0.003 250);
+  --foreground: oklch(0.21 0.02 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 260);
+  --muted: oklch(0.955 0.004 250);
+  --muted-foreground: oklch(0.55 0.02 258);
+  --secondary: oklch(0.965 0.004 250);
+  --secondary-foreground: oklch(0.21 0.02 260);
+  --primary: oklch(0.24 0.02 262);
+  --primary-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0.006 255);
+  --input: oklch(0.9 0.006 255);
+  --ring: oklch(0.62 0.09 65);
+
+  /* 브랜드: 무광 황동(검증 봉인) */
+  --accent: oklch(0.58 0.08 65);
+  --accent-foreground: oklch(0.99 0 0);
+  --accent-soft: oklch(0.93 0.03 75);
+
+  /* 한국 시장 관례 */
+  --up: oklch(0.58 0.19 25);      /* 상승 = 빨강 */
+  --down: oklch(0.52 0.16 258);   /* 하락 = 파랑 */
+  --good: oklch(0.55 0.13 155);
+  --warn: oklch(0.65 0.13 75);
+
+  --radius: 0.75rem;
+  --font-ui: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, -apple-system, sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', 'D2Coding', ui-monospace, 'Cascadia Code', monospace;
+}
+
+.dark {
+  --background: oklch(0.17 0.012 260);
+  --foreground: oklch(0.92 0.01 250);
+  --card: oklch(0.21 0.014 260);
+  --card-foreground: oklch(0.92 0.01 250);
+  --muted: oklch(0.26 0.014 260);
+  --muted-foreground: oklch(0.68 0.015 255);
+  --secondary: oklch(0.25 0.014 260);
+  --secondary-foreground: oklch(0.92 0.01 250);
+  --primary: oklch(0.92 0.01 250);
+  --primary-foreground: oklch(0.17 0.012 260);
+  --border: oklch(0.3 0.014 262);
+  --input: oklch(0.3 0.014 262);
+  --ring: oklch(0.7 0.1 68);
+
+  --accent: oklch(0.72 0.1 68);
+  --accent-foreground: oklch(0.17 0.012 260);
+  --accent-soft: oklch(0.28 0.04 70);
+
+  --up: oklch(0.68 0.18 25);
+  --down: oklch(0.66 0.15 255);
+  --good: oklch(0.68 0.14 155);
+  --warn: oklch(0.75 0.13 78);
+}
+
+/* Tailwind v4 테마 매핑: 유틸(bg-card, text-muted-foreground 등)이 위 변수를 참조 */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.4rem);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+html { color-scheme: light dark; }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 0;
+}
+.num, .mono { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); }
+.up { color: var(--up); }
+.down { color: var(--down); }
+
+::selection { background: var(--accent-soft); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

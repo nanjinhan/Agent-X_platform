@@ -5,7 +5,13 @@
 > **규칙: 깃허브에 푸시할 때마다 이 문서를 먼저 갱신한다.**
 
 **마지막 갱신**: 2026-07-23
-**현재 위치**: T1·T2·T3·T4 완료 → **다음 작업: T5 (provider·agent 모듈)**
+**현재 위치**: T1~T5 완료 + **프론트 조기 착수(apps/web, 목 데이터)** → **다음 작업: T6 (해시체인·서명 — ⚠️ 비가역, 설계 리뷰 먼저)**
+
+> **참고 — 프론트엔드 조기 착수 (2026-07-23, 로드맵 순서 밖)**: 팀 공유·감 잡기용으로 `apps/web`에
+> **Next.js 15 + Tailwind v4 + cult-ui** 프론트를 목 데이터로 먼저 구성함. 4개 화면(랭킹/에이전트 상세/
+> 시그널 상세/투명성) 빌드·렌더 검증 완료. 실행: `pnpm --filter @signals/web dev` → localhost:4000.
+> 이건 T22~T23의 토대이며, 실데이터 연동(`src/lib/mock.ts` → `/v1` fetch)은 T13/T9~T12 완료 후. 상세는
+> [apps/web/README.md](./apps/web/README.md). **백엔드 크리티컬 패스(T6~)는 계획대로 계속 진행.**
 
 ---
 
@@ -16,6 +22,7 @@
 
 | 문서 | 내용 |
 |---|---|
+| [VISION.md](./VISION.md) | 비전 초안 v0.1 — 사회적 미션(소비자 보호), 확장 층위(교육→ESG→광주), 경계. M3 회고 때 개정 |
 | [SIGNALS 요구사항지시서 v1_0.md](./SIGNALS%20요구사항지시서%20v1_0.md) | SRS 원문 (5,047줄). 요구사항 ID(REG/AGT/SIG/PERF/SYS…)의 출처 |
 | [PROJECT-STRUCTURE.md](./PROJECT-STRUCTURE.md) | 저장소 구조 설계 — 모듈 경계, 테이블 소유권, 규제 강제 포인트 |
 | [docs/TASKS.md](./docs/TASKS.md) | 구현 태스크 T1~T30, 상태 표기 포함 |
@@ -71,19 +78,38 @@
   - 탈퇴 시 email이 NOT NULL이라 NULL 대신 `withdrawn+{id}@deleted.invalid`로 익명화.
 - 로컬 검증 방법: `docker compose up -d` → 0001~0003 적용 → `node apps/core-api/dist/main.js`(repo 루트에서, .env 자동 로드)
 
-## 3. 다음 작업: T5 — provider·agent 모듈
+### T5 — provider·agent 모듈 (2026-07-23 완료)
+- provider: 신청(`POST /v1/provider/apply`, bio 200자+·금칙어 검사) → 관리자 승인(`POST /v1/admin/providers/:id/approve`)
+  → **얼리버드 판정 자동**(선착순 100, 수수료 0.10 평생, SUB-001) + `IdentityService.promoteToProvider`로 역할 승격.
+  공개 인터페이스 `ProviderService`(agent 모듈이 사용).
+- agent: CRUD + **AGT-003 상태머신** — 전이는 `@signals/domain`의 `canTransition` + DB `WHERE status=기대값`
+  낙관적 검증(경쟁 조건 방지). 자동심사 서브셋(AGT-018): 금칙어(`findProhibitedTerm`), 이름 UNIQUE,
+  티어 잠금(신규는 T0~T2만, SUB-003), 공급자당 에이전트 수 제한. `genesis_hash`는 생성 시 발급(SIG-005).
+- RBAC: `RolesGuard` + `@Roles(ADMIN)` — 관리자 전이 API(review/activate/approve)는 ADMIN 전용.
+- E2E 검증 완료: 정상 체인 DRAFT→PENDING→VERIFYING→ACTIVE + 불법 전이 4종 409 + 비관리자 403 + 금칙어 422.
+- **주의/발견**:
+  - domain에 `HoldingPeriod` 5구간 신설 (SRS AGT-005가 값 미정의 → 설계 결정, enums.ts 주석 참조)
+  - **U+FFFD(인코딩 깨짐) 입력 거부** 검증 추가 — Windows curl이 한글 인자를 CP949로 보내 금칙어가
+    우회되는 사고를 E2E에서 발견. **한글 바디 테스트는 반드시 `--data-binary @file`(UTF-8 파일)로 할 것.**
+  - pg 파라미터를 SQL에서 두 타입으로 쓰면 42P08 → `$n::varchar` 명시 캐스팅 (agent.repository.transition 참조)
+  - AGT-020/023 검증 기간 정량 판정(30일·15건·MDD)은 성과 엔진(T9~T12) 후 자동화 — 지금은 관리자 수동 activate
 
-**위치**: `apps/core-api/src/modules/provider/`, `apps/core-api/src/modules/agent/`
+## 3. 다음 작업: T6 — 해시체인·서명 (⚠️ 비가역 — 구현 전 설계 리뷰 필수)
 
-**할 일** (AGT-003~005, PRV-001~003):
-1. provider: 최소 CRUD(내부용) — providers·provider_certifications·provider_payout_info 소유. identity에 의존.
-2. agent: 에이전트 CRUD + **상태머신**(AGT-003, `packages/domain`의 `AGENT_TRANSITIONS`·`canTransition` 사용).
-   agents·agent_rules 소유. provider에 의존.
-3. 수동 심사 흐름(자동 심사는 T20 moderation과 함께) — DRAFT→PENDING→VERIFYING→ACTIVE 전이 API
-4. 기존 패턴 재사용: common의 pg Pool·리포지토리·ZodBody·ApiError. IdentityService로만 사용자 확인(SYS-003).
-5. **완료 기준**: 에이전트 등록 후 상태 전이(DRAFT→PENDING→VERIFYING→ACTIVE)가 API로 동작
+**위치**: `apps/signal-service/src/hashchain/` (+ publish 일부)
 
-**T5 이후**: T6(해시체인, **비가역** — 구현 전 설계 리뷰) → … [docs/TASKS.md](./docs/TASKS.md).
+**왜 리뷰가 먼저인가**: 해시 입력 필드·직렬화 포맷·서명 방식은 한번 발행이 시작되면 **영구 고정**된다(TR-4).
+바꾸면 과거 체인 전체를 재구성할 수 없다.
+
+**할 일** (SIG-005~007, SEC-017, SYS-013~014):
+1. **설계 확정 문서(ADR)**: content_hash 입력 필드 순서·직렬화 규칙(SRS: `agent_id|sequence_no|market|ticker|action|target_price|stop_loss_price|rationale|published_at|prev_hash`),
+   서명 알고리즘(ECDSA vs Ed25519), 키 보관(로컬 dev는 파일, 운영 KMS — SEC-017), 키 회전 정책
+2. hashchain: sequence_no 채번(에이전트별 SELECT FOR UPDATE), prev_hash 연결, SHA-256, 서버 서명
+3. publish: 발행 트랜잭션 13단계(SYS-013) 중 T6 범위는 6~10단계 + 멱등성(SYS-014)
+4. signal-service가 DB 접근 필요 → core-api의 common 패턴 복제 또는 공유 (agents 테이블은 읽기만 — genesis_hash·상태 확인)
+5. **완료 기준**: 검수 1.1~1.5 — 발행→체인 연결→서명 검증→변조 감지→멱등성
+
+**T6 이후**: T7(발행 13단계 전체+페어링) → T8(공개 검증 API) → T9~(성과 엔진, Python).
 크리티컬 패스는 **T2→T9→T12** (시장데이터 → 기준가 → 골든 테스트 오차 0.01%p).
 
 ## 4. 개발 환경 셋업 (새로 받은 사람용)

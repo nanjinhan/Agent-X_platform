@@ -76,6 +76,10 @@ export class UserRepository {
     return this.map(rows[0]);
   }
 
+  async updateRole(id: string, role: UserRole): Promise<void> {
+    await this.pool.query('UPDATE users SET role=$2, updated_at=NOW() WHERE id=$1', [id, role]);
+  }
+
   /**
    * 탈퇴 처리 (SYS-022): 개인 식별정보 즉시 파기, user_id·상태는 유지.
    * ci_hash는 중복가입 방지 위해 1년 보관(SYS-021) → 여기서는 유지하고 별도 배치로 만료 삭제.
