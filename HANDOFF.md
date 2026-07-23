@@ -4,8 +4,8 @@
 > "어디까지 했고, 다음에 뭘 해야 하는지" 알 수 있게 한다.
 > **규칙: 깃허브에 푸시할 때마다 이 문서를 먼저 갱신한다.**
 
-**마지막 갱신**: 2026-07-21
-**현재 위치**: T1·T2·T3 완료 → **다음 작업: T4 (identity 모듈 — 가입·로그인·본인인증)**
+**마지막 갱신**: 2026-07-23
+**현재 위치**: T1·T2·T3·T4 완료 → **다음 작업: T5 (provider·agent 모듈)**
 
 ---
 
@@ -54,19 +54,36 @@
   - 미국 유니버스는 전체가 아니라 유동성 상위 34종목 시드(`us_universe.py`). 자체 에이전트 시연엔 충분하나 확장 필요.
   - 거래대금·시가총액·수정주가 계수 여전히 없음(T2와 동일 후속 항목).
 
-## 3. 다음 작업: T4 — identity 모듈
+### T4 — identity 모듈 (2026-07-23 완료)
+- **여기서부터 NestJS 백엔드 실구현 시작.** DB 접근은 `pg` 직접 + 모듈별 리포지토리(ORM 없음).
+- 공통 인프라 신설: `apps/core-api/src/common/` — env(zod 검증), DB Pool, Redis, AES-256-GCM Cipher(SEC-009),
+  RFC7807 예외필터(SYS-024), zod 본문 파이프, JWT 가드(SEC-005 deny-by-default)
+- identity 모듈: api / application / infra / domain 레이어. 공개 인터페이스 = `IdentityService`(SYS-003)
+- **API 8종**(SRS 17.2, 전부 E2E 검증): register, login, social/:provider, refresh, logout, withdraw,
+  verify/phone/request, verify/phone/confirm
+- JWT: Access 30분(본문) + Refresh 30일(HttpOnly 쿠키), **회전 + 재사용 감지 → 전 세션 무효화**(SYS-025)
+- 만 19세 차단(REG-020), Argon2id(SEC-002), 이름 암호화·phone/ci 해시(SEC-009), 탈퇴 익명화(SYS-022)
+- **주의/한계**:
+  - **본인인증은 mock PASS**(`infra/pass.provider.ts`) — 코드 발급이 서버 로그에 찍힘. name/birthDate/ci는
+    confirm 요청 바디로 받음(실 PASS 콜백 대체). Phase 0에서 실 PASS(NICE/KCB) 어댑터로 교체.
+  - **소셜 로그인도 mock** — OAuth 토큰 검증 대신 확인된 email을 바디로 받음. 미가입자는 본인인증 후 가입 유도(403).
+  - **SRS 정오**: users에 `password_hash` 컬럼 누락(SEC-002 요구) → **마이그레이션 0003** 추가.
+  - 탈퇴 시 email이 NOT NULL이라 NULL 대신 `withdrawn+{id}@deleted.invalid`로 익명화.
+- 로컬 검증 방법: `docker compose up -d` → 0001~0003 적용 → `node apps/core-api/dist/main.js`(repo 루트에서, .env 자동 로드)
 
-**위치**: `apps/core-api/src/modules/identity/` (빈 모듈 스켈레톤)
+## 3. 다음 작업: T5 — provider·agent 모듈
 
-**할 일** (SYS-025, REG-010, REG-020, SEC-001~004):
-1. 가입·로그인·소셜(kakao/naver/google/apple)·로그아웃·탈퇴 — API 8종은 SRS 17.2 참조
-2. JWT: Access 30분(메모리) + Refresh 30일(HttpOnly), Refresh 회전 + 재사용 감지(SYS-025)
-3. 본인인증(휴대폰) 연동 + 만 19세 미만 차단(REG-020) — 실 PASS 연동은 목킹 가능, 인터페이스만 확정
-4. 비밀번호 Argon2id, deny-by-default 인가(SEC-005)
-5. `packages/domain`의 `UserRole` 사용, 소유 테이블은 `users`·`user_risk_profiles`
-6. **완료 기준**: 인증 API 8종 동작, 만 19세 차단 확인
+**위치**: `apps/core-api/src/modules/provider/`, `apps/core-api/src/modules/agent/`
 
-**T4 이후**: T5(provider·agent) → T6(해시체인, 비가역) → … [docs/TASKS.md](./docs/TASKS.md).
+**할 일** (AGT-003~005, PRV-001~003):
+1. provider: 최소 CRUD(내부용) — providers·provider_certifications·provider_payout_info 소유. identity에 의존.
+2. agent: 에이전트 CRUD + **상태머신**(AGT-003, `packages/domain`의 `AGENT_TRANSITIONS`·`canTransition` 사용).
+   agents·agent_rules 소유. provider에 의존.
+3. 수동 심사 흐름(자동 심사는 T20 moderation과 함께) — DRAFT→PENDING→VERIFYING→ACTIVE 전이 API
+4. 기존 패턴 재사용: common의 pg Pool·리포지토리·ZodBody·ApiError. IdentityService로만 사용자 확인(SYS-003).
+5. **완료 기준**: 에이전트 등록 후 상태 전이(DRAFT→PENDING→VERIFYING→ACTIVE)가 API로 동작
+
+**T5 이후**: T6(해시체인, **비가역** — 구현 전 설계 리뷰) → … [docs/TASKS.md](./docs/TASKS.md).
 크리티컬 패스는 **T2→T9→T12** (시장데이터 → 기준가 → 골든 테스트 오차 0.01%p).
 
 ## 4. 개발 환경 셋업 (새로 받은 사람용)
@@ -79,9 +96,13 @@ pnpm build                        # TS 전체 빌드 (의존 순서 자동)
 cp .env.example .env              # 로컬 기본값 그대로 동작
 docker compose up -d --wait       # Postgres(5433) + Redis(6379)
 
-# 마이그레이션 (아직 러너 미도입, psql 직접 실행)
+# 마이그레이션 (아직 러너 미도입, psql 직접 실행 — 번호순 전부)
 docker exec signals-postgres psql -U signals -d signals -f /migrations/0001_init.sql
 docker exec signals-postgres psql -U signals -d signals -f /migrations/0002_partitions.sql
+docker exec signals-postgres psql -U signals -d signals -f /migrations/0003_user_password.sql
+
+# core-api 실행 (repo 루트에서 — .env 자동 로드)
+node apps/core-api/dist/main.js   # http://localhost:3000/v1
 
 # Python 배치
 cd batch

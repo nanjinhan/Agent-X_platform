@@ -15,7 +15,7 @@
 | T1 | ✅ | 로컬 인프라 | docker-compose(Postgres 15 @5433, Redis 7), 마이그레이션 0001·0002 적용, .env 체계. ※ SRS 16.1 정오: 파티션 테이블 PK에 파티션 키 포함하도록 정정 | DB에 26개 테이블 생성 + 불변 트리거·파티션 검증 | — |
 | T2 | ✅ | 국내 시장데이터 수집 | `batch/ingestion/kr` — 일봉·종목마스터·거래캘린더, 품질검증 6종(SYS-009). ※ KRX 직접 호출 차단(400 LOGOUT) → **네이버 금융(시세) + KIND(종목마스터)로 전환**. 후속 보강: 시가총액·거래대금·ETF 마스터·수정주가 계수 (정식 데이터 계약 시) | 2,635종목 × 개장일 30일 = 75,125행 적재, 미거래일 2,769행 거부, 단위테스트 14건 통과 | T1 |
 | T3 | ✅ | 미국·보조 데이터 수집 | `ingestion/us` — 미국 일봉·환율·벤치마크·미국 캘린더. ※ Polygon 키 불필요하게 **야후 파이낸스 차트 API로 무료 구현**. SPX_TR은 진짜 TR(`^SP500TR`), **KOSPI200_TR은 무료 TR 소스 부재로 `^KS200` 가격지수 근사**(배당수익률만큼 과소 → 알파 과대. 정식 계약 시 교체). 미국 전체 유니버스도 무료 소스 없어 유동성 상위 34종목 시드만 | 미국 34종목 986행 + 벤치마크 2종 각 29 + 환율 31행 적재, US 캘린더 29개장일, 테스트 16건 통과 | T2 |
-| T4 | ⬜ | identity 모듈 | 가입·로그인·JWT(30분/30일 회전, SYS-025), 본인인증 연동, 만 19세 차단(REG-020) | 인증 API 8종 동작 | T1 |
+| T4 | ✅ | identity 모듈 | 가입·로그인·소셜·refresh 회전·로그아웃·탈퇴·본인인증 2종 = **API 8종**. JWT(30분/30일 회전+재사용 감지, SYS-025), 만 19세 차단(REG-020), Argon2id(SEC-002), 이름 AES-256-GCM 암호화(SEC-009), RFC7807(SYS-024). ※ SRS 정오: users에 password_hash 컬럼 누락 → 0003 마이그레이션 추가. ※ mock PASS(실 연동은 Phase 0). ※ 탈퇴는 email NOT NULL이라 익명화 placeholder(SYS-022) | 8종 API 동작 + 만19세 차단·재사용 감지·탈퇴 익명화 E2E 검증 | T1 |
 | T5 | ⬜ | provider·agent 모듈 | 공급자 최소 CRUD(내부용), 에이전트 CRUD + 상태머신(AGT-003), 수동 심사 | DRAFT→PENDING→VERIFYING→ACTIVE 전이 동작 | T4 |
 | T6 | ⬜ | 해시체인·서명 | `signal-service/hashchain` — sequence_no 채번, prev_hash/content_hash(SIG-005), KMS 서명(SEC-017). **되돌릴 수 없는 결정 — 완료 전 설계 리뷰 필수 (TR-4)** | 검수 1.1~1.4: DB 직접 수정 차단, 체인 조작 감지 | T5 |
 | T7 | ⬜ | 시그널 발행 | `publish` — 발행 트랜잭션 13단계(SYS-013), 멱등성(SYS-014), 발행 시간대(SIG-010), `pairing` 페어링 | ENTRY/EXIT 발행 → positions 생성 | T6 |
