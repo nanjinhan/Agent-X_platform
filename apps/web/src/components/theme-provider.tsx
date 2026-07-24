@@ -4,22 +4,22 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({
-  theme: 'light',
+  theme: 'dark',
   toggle: () => {},
 });
 
+/** 기본 = 다크(서버에서 html.dark 적용됨). 사용자가 라이트를 고르면 클래스를 제거한다. */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    const stored = localStorage.getItem('signals-theme') as Theme | null;
-    const initial = stored ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    setTheme(initial);
+    const stored = localStorage.getItem('signals-theme-v2') as Theme | null;
+    if (stored === 'light') setTheme('light');
   }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('signals-theme', theme);
+    localStorage.setItem('signals-theme-v2', theme);
   }, [theme]);
 
   return (

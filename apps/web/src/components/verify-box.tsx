@@ -1,26 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { Lock } from 'lucide-react';
+import { LockKeyhole, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 /** 시그널 무결성 검증 — 클릭 시 해시체인 상세 펼침 (SYS-027). */
 export function VerifyBox() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mx-5 mb-4 rounded-[10px] bg-[var(--muted)] px-3.5 py-3">
+    <div className="mx-6 mb-5 rounded-xl bg-secondary/70 px-4 py-3.5">
       <div className="flex items-center justify-between gap-2.5">
-        <span className="flex items-center gap-2 text-[12.5px] font-semibold">
-          <Lock className="size-3.5" /> 해시 <span className="mono text-[var(--accent)]">a3f9…c821</span>
+        <span className="flex items-center gap-2 text-[13px] font-semibold">
+          <LockKeyhole className="size-4 text-primary" /> 해시 <span className="mono text-primary">a3f9…c821</span>
         </span>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="rounded-lg px-2.5 py-1 text-[12px] font-semibold text-[var(--accent)] hover:bg-[var(--accent-soft)]"
-        >
+        <Button variant="ghost" size="sm" onClick={() => setOpen((o) => !o)} className="h-8 rounded-full font-semibold text-primary">
           무결성 검증
-        </button>
+        </Button>
       </div>
-      <div className={cn('mono mt-3 space-y-1 border-t border-dashed pt-3 text-[11px] text-[var(--muted-foreground)]', !open && 'hidden')}>
+      <div className={cn('mono mt-3 space-y-1.5 border-t border-dashed pt-3 text-[11px] text-muted-foreground', !open && 'hidden')}>
         {[
           ['sequence_no', '87'],
           ['content_hash', 'a3f9c8e2b1…'],
@@ -32,9 +30,11 @@ export function VerifyBox() {
             <span>{v}</span>
           </div>
         ))}
-        <div className="flex justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 text-[var(--good)]">
           <span>chain 검증</span>
-          <span className="font-bold text-[var(--good)]">VALID ✓ (87건 연결)</span>
+          <span className="flex items-center gap-1 font-bold">
+            <ShieldCheck className="size-3.5" /> VALID (87건 연결)
+          </span>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'motion/react';
 import { PERF_SERIES } from '@/lib/mock';
 
 /** 누적수익 vs 벤치마크 + 낙폭 서브차트 (SVG). 검증기간 음영·엔드포인트 강조. */
@@ -30,14 +31,56 @@ export function PerfChart() {
           </g>
         ))}
         {/* 검증기간 음영 */}
-        <rect x={padL} y={12} width={X(verifyEndIdx) - padL} height={topH - 12} fill="var(--accent)" opacity={0.06} />
-        <text x={X(verifyEndIdx / 2)} y={26} fill="var(--accent)" fontSize={9.5} textAnchor="middle" className="mono">
+        <rect x={padL} y={12} width={X(verifyEndIdx) - padL} height={topH - 12} fill="var(--primary)" opacity={0.05} />
+        <text x={X(verifyEndIdx / 2)} y={26} fill="var(--primary)" fontSize={9.5} textAnchor="middle" className="mono">
           검증기간
         </text>
-        <path d={area} fill="var(--accent)" opacity={0.1} />
-        <path d={line(benchmark)} fill="none" stroke="var(--muted-foreground)" strokeWidth={1.6} strokeDasharray="4 3" />
-        <path d={line(agent)} fill="none" stroke="var(--accent)" strokeWidth={2.4} strokeLinejoin="round" strokeLinecap="round" />
-        <circle cx={X(n - 1)} cy={Y(agent[n - 1])} r={4} fill="var(--accent)" stroke="var(--card)" strokeWidth={2} />
+        <motion.path
+          d={area}
+          fill="var(--primary)"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 0.08 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 1.0 }}
+        />
+        <motion.path
+          d={line(benchmark)}
+          fill="none"
+          stroke="var(--muted-foreground)"
+          strokeWidth={1.6}
+          strokeDasharray="4 3"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+        />
+        {/* 메인 라인 — 뷰포트 진입 시 왼→오 드로잉 + 글로우 */}
+        <motion.path
+          className="glow-line"
+          d={line(agent)}
+          fill="none"
+          stroke="var(--primary)"
+          strokeWidth={2.4}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 1.4, ease: [0.3, 0.1, 0.3, 1] }}
+        />
+        <motion.circle
+          cx={X(n - 1)}
+          cy={Y(agent[n - 1])}
+          r={4}
+          fill="var(--primary)"
+          stroke="var(--card)"
+          strokeWidth={2}
+          className="glow-line"
+          initial={{ scale: 0, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.35, delay: 1.35 }}
+        />
         <text x={X(n - 1) - 6} y={Y(agent[n - 1]) - 9} fill="var(--up)" fontSize={12} textAnchor="end" fontWeight={700} className="mono">
           +28.3%
         </text>

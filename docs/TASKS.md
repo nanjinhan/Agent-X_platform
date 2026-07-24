@@ -17,7 +17,7 @@
 | T3 | ✅ | 미국·보조 데이터 수집 | `ingestion/us` — 미국 일봉·환율·벤치마크·미국 캘린더. ※ Polygon 키 불필요하게 **야후 파이낸스 차트 API로 무료 구현**. SPX_TR은 진짜 TR(`^SP500TR`), **KOSPI200_TR은 무료 TR 소스 부재로 `^KS200` 가격지수 근사**(배당수익률만큼 과소 → 알파 과대. 정식 계약 시 교체). 미국 전체 유니버스도 무료 소스 없어 유동성 상위 34종목 시드만 | 미국 34종목 986행 + 벤치마크 2종 각 29 + 환율 31행 적재, US 캘린더 29개장일, 테스트 16건 통과 | T2 |
 | T4 | ✅ | identity 모듈 | 가입·로그인·소셜·refresh 회전·로그아웃·탈퇴·본인인증 2종 = **API 8종**. JWT(30분/30일 회전+재사용 감지, SYS-025), 만 19세 차단(REG-020), Argon2id(SEC-002), 이름 AES-256-GCM 암호화(SEC-009), RFC7807(SYS-024). ※ SRS 정오: users에 password_hash 컬럼 누락 → 0003 마이그레이션 추가. ※ mock PASS(실 연동은 Phase 0). ※ 탈퇴는 email NOT NULL이라 익명화 placeholder(SYS-022) | 8종 API 동작 + 만19세 차단·재사용 감지·탈퇴 익명화 E2E 검증 | T1 |
 | T5 | ✅ | provider·agent 모듈 | 공급자 신청·승인(얼리버드 10% 자동, SUB-001)·역할 승격, 에이전트 CRUD + 상태머신(AGT-003, DB 낙관적 상태 검증), 자동심사 서브셋(금칙어·티어 잠금 T0~T2·에이전트 수 제한), 관리자 전이 API + RBAC(RolesGuard). +U+FFFD 입력 거부(SEC-012) | DRAFT→PENDING→VERIFYING→ACTIVE 전이 E2E + 불법 전이 4종 409 + RBAC 403 검증 | T4 |
-| T6 | ⬜ | 해시체인·서명 | `signal-service/hashchain` — sequence_no 채번, prev_hash/content_hash(SIG-005), KMS 서명(SEC-017). **되돌릴 수 없는 결정 — 완료 전 설계 리뷰 필수 (TR-4)** | 검수 1.1~1.4: DB 직접 수정 차단, 체인 조작 감지 | T5 |
+| T6 | ✅ | 해시체인·서명 | `signal-service` — 정규 직렬화(이스케이프 포함)·SHA-256·**ECDSA P-256 서명**·sequence 채번·발행 트랜잭션·멱등성 + 공개 검증 API(SYS-027/028). 설계는 **[ADR-0002](adr/0002-hash-chain-and-signature.md)**에 고정. 개발 키는 `.keys/`에 자동 생성(gitignore), 운영은 KMS | **검수 1.1~1.5 전부 통과** (불변 트리거·체인 연결·서명 검증·변조 감지·멱등성) | T5 |
 | T7 | ⬜ | 시그널 발행 | `publish` — 발행 트랜잭션 13단계(SYS-013), 멱등성(SYS-014), 발행 시간대(SIG-010), `pairing` 페어링 | ENTRY/EXIT 발행 → positions 생성 | T6 |
 | T8 | ⬜ | 공개 검증 API | `verify` — `/v1/signals/{id}/verify` 무인증 공개(SYS-027), `.well-known/signing-keys`(SYS-028) | 제3자가 공개키로 독립 검증 가능 | T6 |
 | T9 | ⬜ | 기준가 확정 배치 | `performance/reference_price` — 익일 시가/장중 5분 VWAP(PERF-002~003), 캘린더·시차(PERF-008) | PUBLISHED→FILLED 자동 전환 | T2, T7 |
@@ -57,6 +57,7 @@
 
 | 항목 | 내용 | 출처 |
 |---|---|---|
+| ~~해시 템플릿 확장 검토~~ → **해결 (2026-07-24)** | `suggested_weight`·`max_holding_days`·`valid_until`을 해시 템플릿과 불변 트리거(마이그레이션 0005)에 추가. E2E로 차단·탐지 재검증 완료. ADR-0002 결정 1에 확정 기록 | T6 검증 중 발견 → 해소 |
 | LLM 기반 에이전트 유형 | 투자 철학(예: 버핏 가치투자)을 프롬프트/모델로 학습해 LLM이 시그널을 생성하는 `LLM_BASED` 유형. SRS의 CODE(2차)·MODEL(3차) 사이 신규 유형으로 SRS 확장 필요. 검증 엔진(T6~T13)은 에이전트 내부 구현과 무관하게 재사용됨. **로드맵 유지 결정(2026-07-23) — P4 시점에 재검토** | 2026-07-23 논의 |
 | 보안 하드닝 (T4 리뷰 잔여) | SEC-021 로그인 5회 실패 잠금, SYS-031 레이트 리밋, SEC-002 유출 비밀번호 대조, SEC-004 동시 세션 5개 제한. 게이트웨이/레이트리밋 인프라와 함께 P2 중 처리 | T4 리뷰 |
 | 실거래 실행 | **영구 제외** — 투자일임업 해당(REG-003, 부록A #1 타협 불가). 개인 전용 자동매매 봇은 별개 프로젝트로만 검토 가능 | 2026-07-23 논의 |

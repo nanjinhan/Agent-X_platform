@@ -29,12 +29,12 @@ export function SignalTable({ rows }: { rows: SignalRow[] }) {
             const r = RESULT[s.result];
             const open = s.result === 'OPEN';
             return (
-              <tr key={s.seq} className={cn('border-b', open && 'bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]')}>
+              <tr key={s.seq} className={cn('border-b', open && 'bg-primary/[0.03]')}>
                 <td className="mono px-2.5 py-3 text-[var(--muted-foreground)]">#{s.seq}</td>
                 <td className="px-2.5 py-3">
                   <span className="flex flex-col">
                     {open ? (
-                      <Link href={`/signals/${s.seq}`} className="font-semibold text-[var(--accent)] hover:underline">
+                      <Link href={`/signals/${s.seq}`} className="font-semibold text-primary hover:underline">
                         {s.name} →
                       </Link>
                     ) : (

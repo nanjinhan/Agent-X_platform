@@ -1,19 +1,50 @@
-import { cn } from '@/lib/utils';
-import type { BadgeKind } from '@/lib/types';
+"use client"
 
-const MAP: Record<BadgeKind, { label: string; cls: string }> = {
-  VERIFIED: { label: '🔵 검증완료', cls: 'bg-[var(--accent-soft)] text-[var(--accent)]' },
-  EXPERT: { label: '🟣 인증전문가', cls: 'bg-[var(--muted)] text-[var(--muted-foreground)]' },
-  PLATFORM: { label: '🏢 플랫폼 운영', cls: 'bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-[var(--accent)]' },
-  LOW_DD: { label: '🛡️ 저낙폭', cls: 'bg-[var(--muted)] text-[var(--muted-foreground)]' },
-  POOR: { label: '🔴 성과부진', cls: 'border border-[var(--up)] text-[var(--up)]' },
-};
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { Slot } from "radix-ui"
 
-export function Badge({ kind, className }: { kind: BadgeKind; className?: string }) {
-  const b = MAP[kind];
+import { cn } from "@/lib/utils"
+
+const badgeVariants = cva(
+  "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+        secondary:
+          "bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+        destructive:
+          "bg-destructive text-white focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40 [a&]:hover:bg-destructive/90",
+        outline:
+          "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 [a&]:hover:underline",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+function Badge({
+  className,
+  variant = "default",
+  asChild = false,
+  ...props
+}: React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : "span"
+
   return (
-    <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold', b.cls, className)}>
-      {b.label}
-    </span>
-  );
+    <Comp
+      data-slot="badge"
+      data-variant={variant}
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
+  )
 }
+
+export { Badge, badgeVariants }

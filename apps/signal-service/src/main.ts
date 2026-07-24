@@ -1,6 +1,12 @@
 import 'reflect-metadata';
+import { resolve } from 'node:path';
+import { config as loadDotenv } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ProblemDetailsFilter } from './common/http';
+
+loadDotenv({ path: resolve(process.cwd(), '.env') });
+loadDotenv({ path: resolve(__dirname, '../../../../.env') });
 
 /**
  * 시그널 발행·전달 서비스 (SYS-012).
@@ -10,7 +16,8 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('v1');
-  await app.listen(process.env.PORT ?? 3001);
+  app.useGlobalFilters(new ProblemDetailsFilter());
+  await app.listen(process.env.PORT_SIGNAL_SERVICE ?? 3001);
 }
 
 void bootstrap();

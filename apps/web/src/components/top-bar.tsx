@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { useTheme } from './theme-provider';
 
 const NAV = [
@@ -16,19 +17,16 @@ export function TopBar() {
   const { theme, toggle } = useTheme();
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-[color-mix(in_srgb,var(--card)_88%,transparent)] backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-5 px-5">
-        <Link href="/rankings" className="flex items-center gap-2.5 font-bold tracking-tight">
-          <span className="grid size-6 place-items-center rounded-md bg-[var(--accent)] font-mono text-[13px] font-bold text-[var(--accent-foreground)] shadow-inner">
-            S
+    <header className="sticky top-0 z-40 border-b bg-card/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 px-5">
+        <Link href="/rankings" className="flex items-center gap-2.5">
+          <span className="grid size-8 place-items-center rounded-[10px] bg-primary text-primary-foreground shadow-sm">
+            <ShieldCheck className="size-[18px]" strokeWidth={2.4} />
           </span>
-          <span className="text-[17px]">SIGNALS</span>
-          <span className="hidden text-[11px] font-medium tracking-wide text-[var(--muted-foreground)] sm:inline">
-            검증된 투자 시그널
-          </span>
+          <span className="text-lg font-extrabold tracking-tight">SIGNALS</span>
         </Link>
 
-        <nav className="ml-2 flex gap-1">
+        <nav className="flex gap-1">
           {NAV.map((n) => {
             const active = pathname === n.href || (n.href === '/rankings' && pathname.startsWith('/agents'));
             return (
@@ -36,10 +34,8 @@ export function TopBar() {
                 key={n.href}
                 href={n.href}
                 className={cn(
-                  'rounded-lg px-3 py-1.5 text-[13.5px] font-semibold transition-colors',
-                  active
-                    ? 'bg-[var(--muted)] text-[var(--foreground)]'
-                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
+                  'rounded-full px-3.5 py-2 text-sm font-semibold transition-colors',
+                  active ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {n.label}
@@ -50,16 +46,10 @@ export function TopBar() {
 
         <div className="flex-1" />
 
-        <span className="hidden rounded-full border px-2.5 py-1 text-[11px] font-medium text-[var(--muted-foreground)] md:inline">
-          구독자 뷰 · 훈이
-        </span>
-        <button
-          onClick={toggle}
-          aria-label="테마 전환"
-          className="grid size-9 place-items-center rounded-lg border text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
-        >
-          {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-        </button>
+        <Button variant="ghost" size="icon" onClick={toggle} aria-label="테마 전환" className="text-muted-foreground">
+          {theme === 'dark' ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+        </Button>
+        <Button className="rounded-full font-semibold">시작하기</Button>
       </div>
     </header>
   );

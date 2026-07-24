@@ -20,13 +20,15 @@ export interface AgentMetrics {
   retention3m: number;
 }
 
+/** 전략 성격 아이콘 키 (agent-icon.tsx와 대응) */
+export type AgentIconKey = 'value' | 'dividend' | 'rotation' | 'momentum' | 'default';
+
 export interface AgentSummary {
   id: string;
   rank: number | null;
   name: string;
   tagline: string;
-  initial: string;
-  gradient: [string, string];
+  icon: AgentIconKey;
   providerName: string;
   isPlatformOwned: boolean;
   badges: BadgeKind[];

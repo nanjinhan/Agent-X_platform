@@ -16,5 +16,9 @@ __pycache__/
 .env.*
 !.env.example
 
+# 서명 개인키 (SEC-017) — 절대 커밋 금지. 없으면 개발용으로 자동 생성됨
+.keys/
+*.key.pem
+
 .DS_Store
 Thumbs.db
