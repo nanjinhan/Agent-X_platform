@@ -1,5 +1,9 @@
 import { Module } from '@nestjs/common';
+import { PairingService } from './pairing.service';
 
-/** 진입-청산 시그널 페어링 → positions 행 생성 (8.5) */
-@Module({})
+/** 진입-청산 페어링 (8.5, SIG-018). */
+@Module({
+  providers: [PairingService],
+  exports: [PairingService],
+})
 export class PairingModule {}

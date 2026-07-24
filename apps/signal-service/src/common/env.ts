@@ -7,6 +7,8 @@ const EnvSchema = z.object({
   /** 개발용 키 보관 폴더 (gitignore). 운영은 KMS 사용 — SEC-017 */
   SIGNING_KEY_DIR: z.string().default('.keys'),
   SIGNING_KEY_ID: z.string().min(3).default('signals-dev-01'),
+  /** core-api와 공유하는 Access Token 검증 시크릿 (SYS-025) */
+  JWT_ACCESS_SECRET: z.string().min(8),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

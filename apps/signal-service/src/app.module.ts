@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CommonModule } from './common/common.module';
 import { HashchainModule } from './hashchain/hashchain.module';
 import { PublishModule } from './publish/publish.module';
+import { PairingModule } from './pairing/pairing.module';
 import { VerifyModule } from './verify/verify.module';
 
 /**
@@ -12,6 +13,6 @@ import { VerifyModule } from './verify/verify.module';
  * T6 범위: 해시체인·서명·발행·공개검증. T7에서 pairing/feed 추가.
  */
 @Module({
-  imports: [CommonModule, HashchainModule, PublishModule, VerifyModule],
+  imports: [CommonModule, HashchainModule, PairingModule, PublishModule, VerifyModule],
 })
 export class AppModule {}
