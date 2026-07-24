@@ -21,7 +21,7 @@
 | T7 | ✅ | 시그널 발행 완성 + 페어링 | `signal-service` — 발행 시간대(SIG-010, 동시호가 금지)·market_session·가격순서(SIG-002)·금칙어·중복 미결제·valid_until(SIG-003) + **공급자 JWT 인증·소유권**(core-api와 시크릿 공유) + **진입-청산 페어링**(SIG-018: ENTRY→포지션 개시, EXIT→완결, 재청산 차단) | 검증기 단위 12건 + E2E: 인증 401·ENTRY 포지션 개시·EXIT 완결·가격순서 422·중복 409·재청산 409·체인 VALID 유지 | T6 |
 | T8 | ⬜ | 공개 검증 API | `verify` — `/v1/signals/{id}/verify` 무인증 공개(SYS-027), `.well-known/signing-keys`(SYS-028) | 제3자가 공개키로 독립 검증 가능 | T6 |
 | T9 | ✅ | 기준가 확정 배치 | `performance/reference_price`(순수 판정) + `confirm_reference_prices`(배치). 익일 시가/장중 5분 VWAP(PERF-002~003), KR/US 타임존·세션 분류(PERF-008). ※ 분봉 미수집이라 장중 VWAP은 로직+골든만, 실데이터는 익일시가 경로 | 단위 12건 + **실데이터 E2E: 07-16 장후→휴장 건너뛰고 07-20 시가 확정, PENDING→OPEN, PUBLISHED→FILLED** | T2, T7 |
-| T10 | ⬜ | 자동 청산 판정 | `performance/settlement` — 목표가/손절/만기/강제청산(SIG-019), **갭 처리(SIG-020)** | 검수 2.3~2.6 통과 | T9 |
+| T10 | ✅ | 자동 청산 판정 | `performance/settlement`(순수 판정) + `run_settlement`(배치) — 목표가/손절 장중 터치·**갭 처리(SIG-020, 시가 청산)**·max_holding TIME_LIMIT 종가·에이전트 ARCHIVED 강제청산(AGT-003). 동일 봉 양방 터치는 보수적 손절 우선. LONG/SHORT 대칭. ※ 상장폐지 FORCED는 상폐 데이터 소스 확보 후(T2/T3 후속 보강과 동일 대기) | 단위 14건(검수 2.3 목표가·2.4 갭상승 시가·2.5 갭하락 시가·2.6 만기 종가 포함) 통과 | T9 |
 | T11 | ⬜ | 수익률·시뮬레이션 | 거래비용·슬리피지(PERF-005~006), 달러/원화 병기(PERF-007), 가상 포트폴리오(PERF-011), 스킵 기록 | net_return 산출 | T10 |
 | T12 | ⬜ | 지표 산출 + 골든 테스트 | `performance/metrics` — 샤프·소르티노·MDD·Wilson 하한(PERF-013~018), 일별 스냅샷 | **검수 2.14: 100건 수기 대조 오차 0.01%p 이내**, quantstats 교차검증 | T11 |
 | T13 | ⬜ | 랭킹 | `batch/ranking` — SIGNALS Score 6요소(RANK-004), 3리그×3부문, 노출 자격(RANK-005), 조회 API | 검수 4.1~4.6 통과 | T12 |
