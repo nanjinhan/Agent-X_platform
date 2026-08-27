@@ -32,7 +32,7 @@
 
 | # | 상태 | 태스크 | 내용 | 완료 기준 | 의존 |
 |---|---|---|---|---|---|
-| T16 | ⬜ | subscription 모듈 | 체험/구독 상태머신(6.3.3), 체험 어뷰징 방지(SUB-016), 가격 락인 | 검수 6.1~6.3 | T4, T5 |
+| T16 | ✅ | subscription 모듈 | core-api `modules/subscription` — 체험/구독 상태머신(6.3.3, 도메인 SUBSCRIPTION_TRANSITIONS + DB 낙관적 검증), 7일 강제 체험(SUB-005), **체험 어뷰징 방지(SUB-016, trial_history 1회 제한)**, 가격 락인(구독 시점 price_krw 고정). API 5종: trial·subscribe(체험→유료 전환)·list·cancel·resume. ※ 실결제(PG)는 T17 | **실데이터 E2E**: 체험(TRIAL·락인29900)→재체험 409 TRIAL_ALREADY_USED→유료전환 ACTIVE→해지 CANCELLING→재개 ACTIVE, trial_history 기록 확인 | T4, T5 |
 | T17 | ⬜ | billing — PG 연동 | 토스페이먼츠/포트원 빌링키 정기결제, 실패 재시도 D+1~3(SUB-018), 웹훅 서명 검증 | 검수 6.4~6.5 | T16 |
 | T18 | ⬜ | 환불 | 청약철회(REG-014), 수신 시그널 차감 공식(REG-016), 케이스별 자동/수동(SUB-022~023) | 검수 6.7~6.9 | T17 |
 | T19 | ⬜ | notification-service | fanout 500명 배치(SYS-015), 푸시/이메일/인앱, 재시도, 전송 시각 편차 모니터링(SYS-017) | 검수 7.1: 1,000명 5초 이내 | T7, T16 |
