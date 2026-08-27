@@ -39,6 +39,11 @@ export class MockPgProvider {
     return { success: true, tid, code: 'PAID', message: `${amountKrw}원 결제 완료` };
   }
 
+  /** 결제 취소·환불 (SUB-023 실행). 실 PG는 원 결제 tid로 부분/전액 취소. */
+  refund(originalTid: string, amountKrw: number): { success: boolean; refundTid: string } {
+    return { success: true, refundTid: `mockrefund_${originalTid}_${amountKrw}_${randomBytes(4).toString('hex')}` };
+  }
+
   /** 웹훅 서명 생성 (실 PG가 헤더로 보내는 것과 동일 방식: HMAC-SHA256 hex). 테스트·검증 공용. */
   signWebhook(rawBody: string): string {
     return createHmac('sha256', this.env.PG_WEBHOOK_SECRET).update(rawBody, 'utf8').digest('hex');

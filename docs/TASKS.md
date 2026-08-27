@@ -34,7 +34,7 @@
 |---|---|---|---|---|---|
 | T16 | ✅ | subscription 모듈 | core-api `modules/subscription` — 체험/구독 상태머신(6.3.3, 도메인 SUBSCRIPTION_TRANSITIONS + DB 낙관적 검증), 7일 강제 체험(SUB-005), **체험 어뷰징 방지(SUB-016, trial_history 1회 제한)**, 가격 락인(구독 시점 price_krw 고정). API 5종: trial·subscribe(체험→유료 전환)·list·cancel·resume. ※ 실결제(PG)는 T17 | **실데이터 E2E**: 체험(TRIAL·락인29900)→재체험 409 TRIAL_ALREADY_USED→유료전환 ACTIVE→해지 CANCELLING→재개 ACTIVE, trial_history 기록 확인 | T4, T5 |
 | T17 | ✅ | billing — PG 연동 | core-api `modules/billing` — 빌링키 정기결제(SUB-017), **실패 재시도 D+1~3→EXPIRED(SUB-018)**, 웹훅 HMAC 서명 검증. **MockPgProvider**(실 토스/포트원 어댑터 교체 지점, T4 mock PASS 전략). payments 기록·구독 결제필드 갱신. API: billing/method·billing/webhook·admin/billing/charge-due. ※ 카드정보 미저장(빌링키만) | **실데이터 E2E**: 정상 PAID·실패 PAST_DUE×3→EXPIRED(payments 5행)·웹훅 유효201/위조401 | T16 |
-| T18 | ⬜ | 환불 | 청약철회(REG-014), 수신 시그널 차감 공식(REG-016), 케이스별 자동/수동(SUB-022~023) | 검수 6.7~6.9 | T17 |
+| T18 | ✅ | 환불 | billing 모듈 확장 — 청약철회(REG-014, 7일·0건 전액)·**REG-016 차감공식**(환불=결제×max(0,잔여비율−min(0.5,수신/월평균×0.5)))·케이스별 자동/수동(SUB-022/023). 자동(청약철회·미발행·정지·장애)은 즉시 PG환불, 그외(중도해지·규정위반)는 PENDING 수동승인. refunds 기록·payments REFUNDED/PARTIAL_REFUND | 골든 9건(REG-016·상한50%·케이스) + **실E2E**(청약철회 전액·중도해지 수동→승인·정지 잔여·요건위반 400) | T17 |
 | T19 | ⬜ | notification-service | fanout 500명 배치(SYS-015), 푸시/이메일/인앱, 재시도, 전송 시각 편차 모니터링(SYS-017) | 검수 7.1: 1,000명 5초 이내 | T7, T16 |
 | T20 | ⬜ | moderation | 금칙어 사전 차단, 외부링크·연락처 마스킹(PRV-012), 개별상담 표현 탐지(PRV-008) | 검수 5.4~5.5 | T5 |
 | T21 | ⬜ | 룰 기반 에이전트 | 룰 스키마 검증(AGT-013), `batch/rule_engine` 조건 평가→자동 발행, 드라이런, 버전 관리(AGT-014~015). **+ 캔들 패턴 지표 확장**(음봉·윗꼬리 등 — AGT-012에 없어 OHLC 조합으로 추가, 2026-07-23 결정) | 30일 드라이런 시뮬레이션 동작 | T7, T12 |

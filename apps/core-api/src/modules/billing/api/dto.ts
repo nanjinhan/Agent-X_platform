@@ -13,3 +13,18 @@ export const WebhookSchema = z.object({
   signature: z.string().min(1).max(200),
 });
 export type WebhookInput = z.infer<typeof WebhookSchema>;
+
+/** 환불 요청 — 대상 구독 + 사유(REG-015 케이스). */
+export const RefundRequestSchema = z.object({
+  subscriptionId: z.string().uuid(),
+  reason: z.enum([
+    'WITHDRAWAL',
+    'CANCELLATION',
+    'NO_SIGNALS',
+    'AGENT_SUSPENDED',
+    'PROVIDER_VIOLATION',
+    'SYSTEM_OUTAGE',
+  ]),
+  detail: z.string().max(500).optional(),
+});
+export type RefundRequestInput = z.infer<typeof RefundRequestSchema>;
