@@ -7,6 +7,7 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "httpx>=0.27",
     "tzdata>=2024.1",
+    "cryptography>=43.0",  # T14 무결성 배치: ECDSA P-256 서명 검증 (SEC-018)
 ]
 
 [project.optional-dependencies]
