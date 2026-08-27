@@ -19,6 +19,9 @@ const EnvSchema = z.object({
     .string()
     .default('false')
     .transform((v) => v === 'true'),
+
+  // 결제 (T17). 운영은 실 PG(토스/포트원) 시크릿으로 교체. 웹훅 서명 검증에 사용.
+  PG_WEBHOOK_SECRET: z.string().min(8).default('mock-pg-webhook-secret-change-me'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
