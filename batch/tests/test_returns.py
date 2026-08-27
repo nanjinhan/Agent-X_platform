@@ -17,7 +17,7 @@ from signals_batch.performance.returns import (
     us_krw_net_return,
 )
 
-D = lambda s: Decimal(str(s))  # noqa: E731
+D = lambda s: Decimal(str(s))
 
 
 class TestTradeCost:

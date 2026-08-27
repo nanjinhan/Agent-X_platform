@@ -36,6 +36,10 @@ export class RefundService {
   ): Promise<RefundResult> {
     const payment = await this.repo.findLatestPaidPayment(subscriptionId, userId);
     if (!payment) throw new NotFoundException('환불 가능한 결제 내역이 없습니다');
+    // 이중 환불 방지: 이 결제에 이미 진행/완료된 환불이 있으면 거절 (수동 PENDING 중복 차단)
+    if (await this.repo.hasActiveRefund(payment.id)) {
+      throw new BadRequestException('이미 환불이 진행 중이거나 완료된 결제입니다');
+    }
     const sub = await this.repo.getSubInfo(subscriptionId, userId);
     if (!sub) throw new NotFoundException('구독을 찾을 수 없습니다');
 

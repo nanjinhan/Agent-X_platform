@@ -38,6 +38,15 @@ export class RefundRepository {
     };
   }
 
+  /** 이 결제에 이미 진행/완료된 환불이 있으면 true (이중 환불 방지). */
+  async hasActiveRefund(paymentId: string): Promise<boolean> {
+    const { rows } = await this.pool.query(
+      `SELECT 1 FROM refunds WHERE payment_id=$1 AND status IN ('PENDING','COMPLETED') LIMIT 1`,
+      [paymentId],
+    );
+    return rows.length > 0;
+  }
+
   async getSubInfo(subscriptionId: string, userId: string): Promise<SubRefundInfo | null> {
     const { rows } = await this.pool.query(
       'SELECT agent_id, signals_received FROM subscriptions WHERE id=$1 AND user_id=$2',
