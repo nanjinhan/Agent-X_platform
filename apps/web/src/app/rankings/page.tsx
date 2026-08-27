@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Archive } from 'lucide-react';
 import { AgentCard } from '@/components/agent-card';
 import { HeroReveal, Reveal } from '@/components/motion';
+import { GradientHeading } from '@/components/ui/gradient-heading';
 import { AGENTS, ARCHIVED_AGENTS } from '@/lib/mock';
 import { cn } from '@/lib/utils';
 
@@ -40,9 +41,9 @@ export default function RankingsPage() {
     <div>
       <div className="mb-8">
         <HeroReveal>
-          <h1 className="text-[28px] font-extrabold leading-tight tracking-tight">
-            누가 진짜인지, <span className="text-primary">숫자로</span> 확인하세요
-          </h1>
+          <GradientHeading asChild size="xl" weight="black">
+            <h1 className="leading-tight">누가 진짜인지, 숫자로 확인하세요</h1>
+          </GradientHeading>
         </HeroReveal>
         <HeroReveal delay={0.1}>
           <p className="mt-2 text-[15px] text-muted-foreground">

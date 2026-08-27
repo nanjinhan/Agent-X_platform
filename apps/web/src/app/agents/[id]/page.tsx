@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { GradientHeading } from '@/components/ui/gradient-heading';
+import { TextureCard } from '@/components/ui/texture-card';
+import { TextureButton } from '@/components/ui/texture-button';
 import { AgentBadge } from '@/components/agent-badge';
 import { AgentIcon } from '@/components/agent-icon';
 import { Kpi } from '@/components/kpi';
@@ -32,7 +34,8 @@ export default async function AgentDetail({ params }: { params: Promise<{ id: st
 
       {/* 헤더 */}
       <HeroReveal>
-      <div className="glass glow-primary flex flex-wrap items-start gap-5 rounded-2xl p-6">
+      <TextureCard className="glow-primary">
+      <div className="flex flex-wrap items-start gap-5 p-6 text-foreground">
         <AgentIcon icon={a.icon} size="lg" />
         <div className="min-w-[240px] flex-1">
           <div className="mb-1.5 flex flex-wrap gap-1.5">
@@ -40,7 +43,9 @@ export default async function AgentDetail({ params }: { params: Promise<{ id: st
               <AgentBadge key={b} kind={b} />
             ))}
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{a.name}</h1>
+          <GradientHeading asChild size="md" weight="black">
+            <h1>{a.name}</h1>
+          </GradientHeading>
           <p className="mt-1 text-sm text-muted-foreground">
             {a.tagline} · 공급자 <b className="text-foreground">{a.providerName}</b>
           </p>
@@ -49,12 +54,13 @@ export default async function AgentDetail({ params }: { params: Promise<{ id: st
           <div className="mono text-xl font-bold">
             월 {krw(a.priceKrw)}원
           </div>
-          <Button size="lg" className="mt-2 rounded-full px-7 font-bold">
-            7일 무료체험
-          </Button>
+          <TextureButton variant="accent" size="lg" className="mt-2 w-auto px-2 font-bold">
+            <span className="px-4">7일 무료체험</span>
+          </TextureButton>
           <p className="mt-1.5 text-[11px] text-muted-foreground">체험 중 해지 시 과금 없음</p>
         </div>
       </div>
+      </TextureCard>
       </HeroReveal>
 
       {/* KPI */}
@@ -71,8 +77,9 @@ export default async function AgentDetail({ params }: { params: Promise<{ id: st
 
       {/* 성과 추이 */}
       <Reveal>
-      <section className="mt-4 glass rounded-2xl p-6">
-        <h3 className="font-bold">성과 추이</h3>
+      <TextureCard className="mt-4">
+      <section className="p-6 text-foreground">
+        <h3 className="font-bold text-foreground">성과 추이</h3>
         <p className="mb-4 mt-0.5 text-[13px] text-muted-foreground">
           가상 포트폴리오 100 기준 · 발행 익일 시가 진입 · 거래비용·슬리피지 반영
         </p>
@@ -88,23 +95,27 @@ export default async function AgentDetail({ params }: { params: Promise<{ id: st
         </div>
         <PerfChart />
       </section>
+      </TextureCard>
       </Reveal>
 
       {/* 시그널 이력 */}
       <Reveal>
-      <section className="mt-4 glass rounded-2xl p-6">
-        <h3 className="font-bold">전체 시그널 이력</h3>
+      <TextureCard className="mt-4">
+      <section className="p-6 text-foreground">
+        <h3 className="font-bold text-foreground">전체 시그널 이력</h3>
         <p className="mb-4 mt-0.5 text-[13px] text-muted-foreground">
           성공·실패·미결제·무효까지 전부 공개합니다. 최근 30일 시그널의 근거 전문은 구독자에게만 열립니다.
         </p>
         <SignalTable rows={SIGNALS} />
       </section>
+      </TextureCard>
       </Reveal>
 
       {/* 규율 지표 */}
       <Reveal>
-      <section className="mt-4 glass rounded-2xl p-6">
-        <h3 className="font-bold">규율 지표</h3>
+      <TextureCard className="mt-4">
+      <section className="p-6 text-foreground">
+        <h3 className="font-bold text-foreground">규율 지표</h3>
         <p className="mb-4 mt-0.5 text-[13px] text-muted-foreground">
           성과만이 아니라 규율을 봅니다 — 손절을 지키는지, 청산 없이 방치하는지.
         </p>
@@ -122,6 +133,7 @@ export default async function AgentDetail({ params }: { params: Promise<{ id: st
           ))}
         </div>
       </section>
+      </TextureCard>
       </Reveal>
     </div>
   );

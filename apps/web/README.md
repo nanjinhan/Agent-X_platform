@@ -28,7 +28,12 @@ pnpm --filter @signals/web dev     # http://localhost:4000
 
 ## 디자인 시스템 (`src/app/globals.css`)
 
-- **cult-ui**(shadcn 기반) 컴포넌트 사용: `gradient-heading`, `texture-card`, `animated-number` (`src/components/ui/`)
+- **cult-ui**(shadcn 기반, nolly-studio/cult-ui) 시그니처 컴포넌트를 실제 이식해 사용 (`src/components/ui/`):
+  - `texture-card` — 4겹 중첩 보더 + card/secondary 그라데이션의 질감 카드 (랭킹 카드·KPI 타일·상세 섹션)
+  - `gradient-heading` — bg-clip-text 그라데이션 제목 (⚠️ Radix Slot 사용 → 파일에 `"use client"` 필수)
+  - `texture-button` — 그라데이션 버튼 (상단바 시작하기·체험 CTA, variant=accent)
+  - `animated-number` — 카운트업 숫자 (KPI)
+  - ※ 2026-08-03 확인 결과 이전에는 이름만 적히고 texture-card/gradient-heading이 실제론 없었음 → 진짜 이식함.
 - shadcn OKLCH 토큰 위에 **SIGNALS 브랜드 레이어**:
   - **황동(브론즈) 액센트** = "검증 봉인" 은유
   - **한국 시장 관례: 상승=빨강(`--up`), 하락=파랑(`--down`)** — `.up`/`.down` 클래스, `lib/format.ts`의 `dir()`

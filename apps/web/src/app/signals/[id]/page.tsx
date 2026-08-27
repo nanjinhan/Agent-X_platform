@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
 import { VerifyBox } from '@/components/verify-box';
 import { HeroReveal } from '@/components/motion';
+import { TextureCard } from '@/components/ui/texture-card';
 
 /** 시그널 상세 (목업). 실제로는 /v1/signals/{id} 응답을 렌더. */
 export default function SignalDetail() {
@@ -16,7 +17,8 @@ export default function SignalDetail() {
 
       <div className="mx-auto max-w-[560px]">
         <HeroReveal>
-        <div className="glass glow-primary overflow-hidden rounded-2xl">
+        <TextureCard className="glow-primary overflow-hidden">
+        <div className="overflow-hidden text-foreground">
           <div className="flex items-center justify-between border-b px-6 py-4">
             <b>짱구가치</b>
             <div className="mono text-right text-xs text-muted-foreground">
@@ -61,6 +63,7 @@ export default function SignalDetail() {
             <div className="mt-1.5 text-[11px]">발행 (주)시그널스 · 유사투자자문업 신고 제2026-000000호 · 콘텐츠 제공 [짱구퀀트]</div>
           </div>
         </div>
+        </TextureCard>
         </HeroReveal>
 
         <p className="mt-4 text-center text-[13px] text-muted-foreground">

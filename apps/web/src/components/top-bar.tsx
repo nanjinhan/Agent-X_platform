@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Moon, Sun, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { TextureButton } from '@/components/ui/texture-button';
 import { useTheme } from './theme-provider';
 
 const NAV = [
@@ -49,7 +50,9 @@ export function TopBar() {
         <Button variant="ghost" size="icon" onClick={toggle} aria-label="테마 전환" className="text-muted-foreground">
           {theme === 'dark' ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
         </Button>
-        <Button className="rounded-full font-semibold">시작하기</Button>
+        <TextureButton variant="accent" size="sm" className="w-auto font-semibold">
+          <span className="px-2">시작하기</span>
+        </TextureButton>
       </div>
     </header>
   );

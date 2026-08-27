@@ -3,25 +3,27 @@ import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AgentSummary } from '@/lib/types';
 import { pct, pctPoint, dir, krw } from '@/lib/format';
+import { TextureCard } from '@/components/ui/texture-card';
 import { AgentBadge } from './agent-badge';
 import { AgentIcon } from './agent-icon';
 
 /**
- * 랭킹 카드 — 토스식 다이어트: 수익률이 주인공, 나머지는 보조.
- * (기존: 지표 5개 나열 → 변경: 수익률 크게 + 알파·승률만)
+ * 랭킹 카드 — cult-ui TextureCard(질감 있는 4겹 보더)로 프리미엄 깊이.
+ * 수익률이 주인공, 나머지는 보조.
  */
 export function AgentCard({ a }: { a: AgentSummary }) {
   const m = a.metrics;
   const archived = a.status === 'ARCHIVED';
 
   const body = (
-    <div
+    <TextureCard
       className={cn(
-        'glass group flex items-center gap-4 rounded-2xl p-5 transition-all duration-300',
-        !archived && 'hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_0_30px_var(--glow)]',
-        archived && 'opacity-75',
+        'group transition-all duration-300',
+        !archived && 'hover:-translate-y-0.5 hover:shadow-[0_0_30px_var(--glow)]',
+        archived && 'opacity-70',
       )}
     >
+      <div className="flex items-center gap-4 p-5 text-foreground">
       {/* 순위 + 아바타 */}
       <div className="flex items-center gap-3.5">
         <span className={cn('mono w-6 text-center text-lg font-bold', (a.rank ?? 99) <= 3 ? 'text-primary' : 'text-muted-foreground')}>
@@ -76,7 +78,8 @@ export function AgentCard({ a }: { a: AgentSummary }) {
         </div>
         {!archived && <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />}
       </div>
-    </div>
+      </div>
+    </TextureCard>
   );
 
   return archived ? <div>{body}</div> : <Link href={`/agents/${a.id}`}>{body}</Link>;

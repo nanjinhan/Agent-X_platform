@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { LockKeyhole, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { TextureButton } from '@/components/ui/texture-button';
 
 /** 시그널 무결성 검증 — 클릭 시 해시체인 상세 펼침 (SYS-027). */
 export function VerifyBox() {
@@ -14,9 +14,9 @@ export function VerifyBox() {
         <span className="flex items-center gap-2 text-[13px] font-semibold">
           <LockKeyhole className="size-4 text-primary" /> 해시 <span className="mono text-primary">a3f9…c821</span>
         </span>
-        <Button variant="ghost" size="sm" onClick={() => setOpen((o) => !o)} className="h-8 rounded-full font-semibold text-primary">
-          무결성 검증
-        </Button>
+        <TextureButton variant="minimal" size="sm" onClick={() => setOpen((o) => !o)} className="w-auto font-semibold">
+          <span className="px-2 text-primary">{open ? '접기' : '무결성 검증'}</span>
+        </TextureButton>
       </div>
       <div className={cn('mono mt-3 space-y-1.5 border-t border-dashed pt-3 text-[11px] text-muted-foreground', !open && 'hidden')}>
         {[
